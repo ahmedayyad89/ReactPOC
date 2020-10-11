@@ -1,17 +1,16 @@
-import React from "react";
-import { Form } from "antd";
-import LockOutlinedIcon from "@material-ui/icons/LockOpenOutlined";
+import React, { useEffect } from "react";
+import { Form, Avatar, Typography } from "antd";
 import {
-  Container,
-  Avatar,
-  Typography,
-  CssBaseline,
   Button,
+  CircularProgress,
+  Container,
+  CssBaseline,
   makeStyles,
   TextField,
 } from "@material-ui/core";
+import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 
-const styles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(8),
     display: "flex",
@@ -29,14 +28,24 @@ const styles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  buttonProgress: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+  },
 }));
 
-const confirmRestorePasswordForm = (props) => {
-  const classes = styles();
+const ChangePasswordFormComponent = (props) => {
+  const classes = useStyles();
   const { getFieldDecorator } = props.form;
+
+  useEffect(() => {
+    props.form.resetFields();
+  }, [props.isModalOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         props.handleSubmit(values);
@@ -52,30 +61,57 @@ const confirmRestorePasswordForm = (props) => {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Reset Password!
+          Change Password
         </Typography>
-        <Form name="normal_login" onSubmit={handleSubmit}>
+        <Form name="normal_login"
+        
+        onSubmit={handleSubmit}>
           <Form.Item
-            name="password"
-            rules={[{ required: true, message: "Please enter your Password!" }]}
+            name="oldPassword"
+            rules={[
+              { required: true, message: "Please enter your old Password!" },
+            ]}
             {...(props.isError && {
               help: props.errorMessage,
               validateStatus: "error",
             })}
           >
-            {getFieldDecorator("password", {
+            {getFieldDecorator("oldPassword", {
               rules: [
-                { required: true, message: "Please input your password!" },
+                { required: true, message: "Please input your old password!" },
               ],
             })(
               <TextField
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                name="password"
-                label="Password"
+                name="oldPassword"
+                label="Old Password"
                 type="password"
-                id="password"
+                id="oldPassword"
+              
+              />
+            )}
+          </Form.Item>
+          <Form.Item
+            name="newPassword"
+            rules={[
+              { required: true, message: "Please enter your new Password!" },
+            ]}
+          >
+            {getFieldDecorator("newPassword", {
+              rules: [
+                { required: true, message: "Please input your new password!" },
+              ],
+            })(
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                name="newPassword"
+                label="New Password"
+                type="password"
+                id="newPassword"
               />
             )}
           </Form.Item>
@@ -116,15 +152,18 @@ const confirmRestorePasswordForm = (props) => {
               color="primary"
               className={classes.submit}
             >
-              Submit
+              Change Password
             </Button>
           </Form.Item>
+          {props.isLoading && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
         </Form>
       </div>
     </Container>
   );
 };
 
-export const ConfirmRestorePasswordForm = Form.create({
-  name: "confirmRestorePasswordForm",
-})(confirmRestorePasswordForm);
+export const ChangePasswordForm = Form.create({ name: "changePasswordForm" })(
+  ChangePasswordFormComponent
+);

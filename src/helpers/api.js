@@ -79,3 +79,20 @@ export const api = (requestType, url, payload) => {
       });
   });
 };
+
+export const upload = (url, data) => {
+  return new Promise((resolve, reject) => {
+    axiosInstace.post(url, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 120000
+    })
+      .then(response => {
+        resolve(response.data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};

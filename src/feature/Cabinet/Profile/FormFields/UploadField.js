@@ -1,5 +1,6 @@
-import React, {useState} from "react";
-import {Modal, Upload} from "antd";
+import React, { useState } from "react";
+import { Modal, Upload } from "antd";
+import { extension } from 'mime-types';
 
 function getBase64(file) {
   return new Promise((resolve, reject) => {
@@ -9,9 +10,8 @@ function getBase64(file) {
     reader.onerror = error => reject(error);
   });
 }
-
-const UploadField = () => {
-  const [files, setFiles] = useState([]);
+const acceptedExtensions = ['image/png', 'image/jpeg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+const UploadField = (props) => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
@@ -26,32 +26,57 @@ const UploadField = () => {
     setPreviewTitle(file.name || file.url.substring(file.url.lastIndexOf('/') + 1));
   };
 
-  const handleChange = ({ fileList }) => setFiles(fileList);
+  const handleChange = async ({ fileList }) => {
+    // setFiles(fileList);
+    props.addFiles(props.name, fileList);
+    if (fileList.length > 0) {
+      fileList.forEach( async (file) => {
+        if (file.size > 2 * 1024 * 1024) {
+          props.addError('Exceeds file size!');
+          props.addFiles(props.name, []);
+        } else if (!acceptedExtensions.includes(file.type)) {
+          props.addFiles(props.name, []);
+          props.addError('Invalid file extension!')
+        } else {
+          const preview = await getBase64(file.originFileObj);
+          file.preview = preview;
+          props.addFiles(props.name, fileList);
+        }
+      });
+    } 
+  }
+
+  const handleCustomRequest = ({ onSuccess }) => {
+    setTimeout(() => {
+      onSuccess("ok");
+    }, 0);
+  }
 
   return (
-      <>
-        <Upload
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            listType="picture-card"
-            fileList={files}
-            onPreview={handlePreview}
-            onChange={handleChange}
-        >
-          {files.length >= 8 ? null : (
-              <div>
-                <div>Upload</div>
-              </div>
-          )}
-        </Upload>
-        <Modal
-            visible={previewVisible}
-            title={previewTitle}
-            footer={null}
-            onCancel={handleCancel}
-        >
-          <img alt="example" style={{ width: '100%' }} src={previewImage} />
-        </Modal>
-      </>
+    <>
+      <Upload
+        name={props.name}
+        listType="picture-card"
+        fileList={props.files}
+        onPreview={handlePreview}
+        onChange={handleChange}
+        customRequest={handleCustomRequest}
+      >
+        {props.files.length < 4 ? (
+          <div>
+            <div>Upload</div>
+          </div>
+        ) : null}
+      </Upload>
+      <Modal
+        visible={previewVisible}
+        title={previewTitle}
+        footer={null}
+        onCancel={handleCancel}
+      >
+        <img width="50" alt="example" style={{ width: 50 }} src={previewImage} />
+      </Modal>
+    </>
   );
 };
 

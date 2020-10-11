@@ -1,111 +1,155 @@
 import React from "react";
-import { Form, Input, Button, Row, Col, message } from "antd";
-import style from "./index.module.scss";
-import animate from "../../../../../assets/account-animate.svg";
-const setPasswordFormComponent = props => {
+import { Form } from "antd";
+import LockOutlinedIcon from "@material-ui/icons/LockOpenOutlined";
+import {
+  Avatar,
+  CircularProgress,
+  Button,
+  Container,
+  CssBaseline,
+  makeStyles,
+  TextField,
+  Typography,
+} from "@material-ui/core";
+import { whiteColor } from "assets/jss/material-dashboard-react";
+
+const myStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: "100%", // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+  buttonProgress: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    color: whiteColor,
+  },
+}));
+
+const setPasswordFormComponent = (props) => {
+  const classes = myStyles();
   const { getFieldDecorator } = props.form;
 
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         props.handleSubmit(values);
-        const key = 'updatable';
-        message.loading({ content: 'Loading...', key });
-        setTimeout(() => {
-        message.success({ content: 'Password set successfully..', key, duration: 2 });
-        }, 1000);
       }
     });
   };
 
   return (
-    <div>
-      <Row>
-        <Col span={24}>
-          <object
-            type="image/svg+xml"
-            data={animate}
-            className={style.animate}
-            viewbox="0 0 120 120"
-          >
-            svg-animation
-          </object>
-        </Col>
-      </Row>
-      <Row>
-        <Col span={24}>
-          <Form onSubmit={handleSubmit}>
-            <h2 className={style.authHeader}>
-              {props.isTokenValid ? "Set Password" : "Your Token has expired "}
-            </h2>
-            {!props.isTokenValid && (
-              <h3 className={style.authHeader}>
-                Click the button to generate a new token
-              </h3>
-            )}
-            {props.isTokenValid && (
-              <>
-                <Form.Item
-                  {...(props.passIsError && {
-                    help: props.passErrorMessage,
-                    validateStatus: "error"
-                  })}
-                  name="password"
-                  rules={[
-                    { required: true, message: "Please enter your Password!" }
-                  ]}
-                  style={{
-                    width: "60%",
-                    marginLeft: "150px"
-                  }}
-                >
-                  {getFieldDecorator("password", {
-                    rules: [
-                      { required: true, message: "Please input your password!" }
-                    ]
-                  })(<Input type="password" placeholder="Password" />)}
-                </Form.Item>
-                <Form.Item
-                  {...(!props.passwordsMatched && {
-                    help: "Password do not match",
-                    validateStatus: "error"
-                  })}
-                  name="confirmPassword"
-                  rules={[
-                    { required: true, message: "Please enter your Password again!" }
-                  ]}
-                  style={{
-                    width: "60%",
-                    marginLeft: "150px"
-                  }}
-                >
-                  {getFieldDecorator("confirmPassword", {
-                    rules: [
-                      { required: true, message: "Please input your password again!" }
-                    ]
-                  })(<Input type="password" placeholder="Confirm Password" />)}
-                </Form.Item>
-              </>
-            )}
-            <Form.Item>
-              <Button
-                loading={props.isLoading}
-                type="primary"
-                style={{
-                  width: "50%",
-                  marginLeft: "190px"
-                }}
-                htmlType="submit"
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <div className={classes.paper}>
+        <Avatar className={classes.avatar}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          {props.isTokenValid ? "Set Password" : "Your Token has expired "}
+        </Typography>
+        <Form name="normal_login" onSubmit={handleSubmit}>
+          {!props.isTokenValid && (
+            <h3>
+              Click the button to generate a new token
+            </h3>
+          )}
+          {props.isTokenValid && (
+            <>
+              <Form.Item
+                {...(props.passIsError && {
+                  help: props.passErrorMessage,
+                  validateStatus: "error",
+                })}
+                name="password"
+                rules={[
+                  { required: true, message: "Please enter your Password!" },
+                ]}
               >
-                {props.isTokenValid ? "Submit" : "Resend"}
-              </Button>
-            </Form.Item>
-          </Form>
-        </Col>
-      </Row>
-    </div>
+                {getFieldDecorator("password", {
+                  rules: [
+                    { required: true, message: "Please input your password!" },
+                  ],
+                })(
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    name="password"
+                    label="Password"
+                    type="password"
+                    id="password"
+                  />
+                )}
+              </Form.Item>
+
+              <Form.Item
+                {...(!props.passwordsMatched && {
+                  help: "Password do not match",
+                  validateStatus: "error",
+                })}
+                name="confirmPassword"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter your Password again!",
+                  },
+                ]}
+              >
+                {getFieldDecorator("confirmPassword", {
+                  rules: [
+                    {
+                      required: true,
+                      message: "Please input your password again!",
+                    },
+                  ],
+                })(
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    name="confirmPassword"
+                    label="Confirm Password"
+                    type="password"
+                    id="confirmPassword"
+                  />
+                )}
+              </Form.Item>
+            </>
+          )}
+
+          <Form.Item>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
+            >
+              {props.isTokenValid ? "Submit" : "Resend"}
+            </Button>
+            {props.isLoading && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
+          </Form.Item>
+        </Form>
+      </div>
+    </Container>
   );
 };
 

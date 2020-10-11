@@ -1,7 +1,10 @@
 import { combineReducers } from "redux";
 
 import { usersReducer as users } from "./Users";
+import { historyReducer as history } from "./History";
+import { profileReducer as profile , fileReducer as files } from "./Profile";
+import { changePasswordReducer as changePassword } from "./ChangePassword";
 
 export const reducers = combineReducers({
-  users
+  users, history, changePassword, profile, files
 });

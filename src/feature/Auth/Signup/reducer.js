@@ -1,14 +1,15 @@
 import {
   SIGNUP_REQUEST_PROCESS,
   SIGNUP_REQUEST_ERROR,
-  SIGNUP_SUCCESS
+  SIGNUP_SUCCESS, SIGNUP_SUCCESS_CLOSE_DIALOG
 } from "./actions";
 
 const initialState = {
   isSuccess: false,
   isLoading: false,
   isError: false,
-  errorMessage: ""
+  errorMessage: "",
+  openSuccessDialog: false
 };
 
 export const signupReducer = (state = initialState, action) => {
@@ -26,7 +27,13 @@ export const signupReducer = (state = initialState, action) => {
       return {
         ...state,
         isSuccess: true,
-        isLoading: false
+        isLoading: false,
+        openSuccessDialog: true
+      };
+    case SIGNUP_SUCCESS_CLOSE_DIALOG:
+      return {
+        ...state,
+        openSuccessDialog: false
       };
     default:
       return state;

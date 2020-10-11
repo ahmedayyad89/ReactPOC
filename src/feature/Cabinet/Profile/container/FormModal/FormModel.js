@@ -1,6 +1,11 @@
 export default {
     formId: 'checkoutForm',
     formField: {
+      name: {
+        name: 'firstName',
+        label: 'Name*',
+        requiredErrorMsg: 'Name is required'
+      },
       firstName: {
         name: 'firstName',
         label: 'First name*',

@@ -1,26 +1,22 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { SigninForm } from "../components/SigninForm";
-import style from "./index.module.scss";
 import { connect } from "react-redux";
 import { signinRequest } from "../actions";
 import { withRouter } from "react-router-dom";
 
 const Signin = props => {
   useEffect(() => {
-    props.isAuth && props.history.push("/cabinet");
+    props.isAuth && props.history.push('/cabinet/profile');
   });
 
   return (
-    <div className={style.signinFormWrapper}>
       <SigninForm
         onSubmit={props.signinRequest}
         isLoading={props.isLoading}
         isError={props.isError}
         errorMessage={props.errorMessage}
       />
-      
-    </div>
   );
 };
 

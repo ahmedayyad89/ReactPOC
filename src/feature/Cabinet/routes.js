@@ -1,8 +1,6 @@
-import React from "react";
-import { HomeContainer } from "./Home";
-import { UsersContainer } from "./Users";
+import { HistoryContainer } from "./History";
+import { ChangePasswordContainer } from "./ChangePassword";
 import { ProfileContainer } from "./Profile";
-import Dashboard from "@material-ui/icons/Dashboard";
 import Person from "@material-ui/icons/Person";
 import History from "@material-ui/icons/History";
 import Settings from "@material-ui/icons/Settings";
@@ -19,7 +17,7 @@ const routes = [
   {
     path: "/history",
     name: "History",
-    component: () => (<>History</>),
+    component: HistoryContainer,
     layout: "/cabinet",
     icon: History,
     rtlName: "",
@@ -27,7 +25,7 @@ const routes = [
   {
     path: "/settigns",
     name: "Settings",
-    component: () => (<>Settings</>),
+    component: ChangePasswordContainer,
     layout: "/cabinet",
     icon: Settings,
     rtlName: "",

@@ -1,6 +1,6 @@
 export const userType = {
-  individual: 'individual',
-  nonIndividual: 'non-individual'
+  individual: 'INDIVIDUAL',
+  nonIndividual: 'NONINDIVIDUAL'
 };
 
 export const userTypeOptions = [

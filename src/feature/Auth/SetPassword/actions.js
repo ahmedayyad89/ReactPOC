@@ -2,6 +2,7 @@ import { api } from "../../../helpers/api";
 
 export const SET_PASSWORD_PROCESS = "SET_PASSWORD_PROCESS";
 export const SET_PASSWORD_SUCCESS = "SET_PASSWORD_SUCCESS";
+export const SET_PASSWORD_SUCCESS_CLOSE_DIALOG = "SET_PASSWORD_SUCCESS_CLOSE_DIALOG";
 export const SET_PASSWORD_ERROR = "SET_PASSWORD_ERROR";
 export const TOKEN_VALIDITY_PROCESS = "TOKEN_VALIDITY_PROCESS";
 export const TOKEN_VALIDITY_ERROR = "TOKEN_VALIDITY_ERROR";
@@ -14,6 +15,10 @@ const setPasswordProcess = () => ({ type: SET_PASSWORD_PROCESS });
 
 const setPasswordSuccess = () => ({
   type: SET_PASSWORD_SUCCESS
+});
+
+export const setPasswordCloseDialog = () => ({
+  type: SET_PASSWORD_SUCCESS_CLOSE_DIALOG
 });
 
 const setPasswordError = error => ({

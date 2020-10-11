@@ -1,153 +1,168 @@
-import React from "react";
-import { Form, Input, Button, Row, Col, Typography, Select } from "antd";
-import style from "./index.module.scss";
+import React, { useEffect, useState } from "react";
+import { Radio, Avatar, Typography, Form } from "antd";
+import {
+  Button,
+  Container,
+  CssBaseline,
+  makeStyles,
+  TextField,
+} from "@material-ui/core";
+import LockOutlinedIcon from "@material-ui/icons/LockOpenOutlined";
+import {
+  GoogleReCaptchaProvider,
+  GoogleReCaptcha,
+} from "react-google-recaptcha-v3";
+import config from "../../../../../config/app";
+import GridContainer from "../../../../../components/Grid/GridContainer";
+import GridItem from "../../../../../components/Grid/GridItem";
 import { Link } from "react-router-dom";
-import ReCAPTCHA from "react-google-recaptcha";
-import animate from "../../../../../assets/online-world-animate.svg";
-import app from "../../../../../config/app";
-import { userType } from "config/constants";
 
-const SignupFormComponent = props => {
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: "100%", // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
+
+const SignupFormComponent = (props) => {
+  const classes = useStyles();
   const { getFieldDecorator } = props.form;
+  const [recaptchaToken, setRecaptchaToken] = useState();
+  const registerationTypeOptions = [
+    { label: "Individual", value: "INDIVIDUAL" },
+    { label: "Not Individual", value: "NONINDIVIDUAL" },
+  ];
 
-  const handleSubmit = e => {
+  useEffect(() => {
+    props.form.resetFields();
+  }, [props.isModalOpen]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         props.onSubmit(values);
+        values["token"] = recaptchaToken;
       }
     });
   };
 
-  const { Title } = Typography;
-
   return (
-    <Row type='flex' align="middle">
-      <Col span={12} className={style.card}>
-        <object
-          type="image/svg+xml"
-          data={animate}
-          className={style.animate}
-          viewbox="0 0 1200 1200"
-        >
-          svg-animation
-        </object>
-        <h5 className={style.signupFooter}>Copyright © 2020. All rights reserved.</h5>
-      </Col>
-      <Col span={12}>
-        <Title
-          level={3}
-          style={{
-            fontWeight: "bold",
-            textAlign: "center",
-            marginBottom: 50
-          }}
-        >
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <div className={classes.paper}>
+        <Avatar className={classes.avatar}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
           Get onboard with us..
-        </Title>
-        <Form
-          name="normal_login"
-          onSubmit={handleSubmit}
-          className={style.signinForm}
-          initialValues={{ remember: true }}
-        >
+        </Typography>
+        <Form name="normal_login" onSubmit={handleSubmit}>
           <Form.Item
             name="name"
             rules={[{ required: true, message: "Please enter your name" }]}
-            style={{
-              width: "70%",
-              marginLeft: 60,
-            }}
           >
             {getFieldDecorator("name", {
               rules: [
                 { required: true, message: "Please input your name!" },
                 { min: 2, message: "Min length name 2 symbols!" },
-                { max: 30, message: "Max length name 30 symbols!" }
-              ]
-            })(<Input placeholder="Name" />)}
+                { max: 30, message: "Max length name 30 symbols!" },
+              ],
+            })(
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                id="name"
+                label="Name"
+                name="name"
+                autoFocus
+              />
+            )}
           </Form.Item>
           <Form.Item
             name="email"
             rules={[{ required: true, message: "Please enter your Email" }]}
-            style={{
-              width: "70%",
-              marginLeft: 60
-            }}
             {...(props.isError && {
               help: props.errorMessage,
-              validateStatus: "error"
+              validateStatus: "error",
             })}
           >
             {getFieldDecorator("email", {
               rules: [
                 { required: true, message: "Please input your email!" },
-                { type: "email", message: "The input is not valid E-mail!" }
-              ]
-            })(<Input placeholder="Email" />)}
-          </Form.Item>
-          <Form.Item
-              name="user_type"
-              rules={[{ required: true, message: "Please select" }]}
-              style={{
-                width: "70%",
-                marginLeft: 60
-              }}
-              {...(props.isError && {
-                help: props.errorMessage,
-                validateStatus: "error"
-              })}
-          >
-            {getFieldDecorator("user_type", {
-              rules: [
-                { required: true, message: "Please select!" },
-                { type: "string", message: "The input is not valid!" }
-              ]
+                { type: "email", message: "The input is not valid E-mail!" },
+              ],
             })(
-                <Select defaultValue="individual">
-                  <Select.Option value={userType.individual}>Individual</Select.Option>
-                  <Select.Option value={userType.nonIndividual}>Non-Individual</Select.Option>
-                </Select>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoFocus
+              />
             )}
           </Form.Item>
-          <div className={style.captchaWrap}>
-            {/* <Form.Item>
-              {getFieldDecorator("recaptcha", {
-                rules: [
-                  { required: true, message: "Please fill the reCaptcha!" }
-                ]
-              })(
-                  // <ReCAPTCHA
-                  //     sitekey={app.captchaSiteKey}
-                  // />
-              )}
-            </Form.Item> */}
-          </div>
+          <Form.Item name="recaptcha">
+            <GoogleReCaptchaProvider reCaptchaKey={config.RECAPTCHA_SECRET_KEY}>
+              <GoogleReCaptcha onVerify={(token) => setRecaptchaToken(token)} />
+            </GoogleReCaptchaProvider>
+          </Form.Item>
+          <Form.Item name="type" label="Registeration Type">
+            {getFieldDecorator("type", {
+              initialValue: "INDIVIDUAL",
+            })(
+              <Radio.Group
+                options={registerationTypeOptions}
+                optionType="button"
+              ></Radio.Group>
+            )}
+          </Form.Item>
           <Form.Item>
             <Button
-              type="primary"
-              loading={props.isLoading}
-              style={{ width: "100%" }}
-              htmlType="submit"
-              style={{
-                width: "70%",
-                marginLeft: 60
-              }}
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
             >
-              Sign up
+              Sign Up
             </Button>
-            <div className={style.singupLinks}>
-              Have an account?
-              <Link to="/"> Login</Link>
-            </div>
           </Form.Item>
+          <GridContainer>
+            <GridItem xs>
+              <Link to="/restore-password" variant="body2">
+                Forgot password?
+              </Link>
+            </GridItem>
+            <GridItem>
+              <Link to="/" variant="body2">
+                Have an account?
+              </Link>
+            </GridItem>
+          </GridContainer>
         </Form>
-      </Col>
-    </Row>
+      </div>
+    </Container>
   );
 };
 
-export const SignupForm = Form.create({ name: "signinForm" })(
+export const SignupForm = Form.create({ name: "signupForm" })(
   SignupFormComponent
 );

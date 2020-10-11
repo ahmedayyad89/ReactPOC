@@ -2,16 +2,24 @@ import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { withRouter, Link } from "react-router-dom";
-import { confirmRestorePasswordRequest, verifyRestorePasswordToken } from "../actions";
-import { ConfirmRestorePasswordForm } from '../components/ConfirmRestorePasswordForm';
+import {
+  confirmRestorePasswordRequest,
+  verifyRestorePasswordToken,
+} from "../actions";
+import { ConfirmRestorePasswordForm } from "../components/ConfirmRestorePasswordForm";
 import { Loader } from "../../../Common/Loader";
-import style from "./index.module.scss";
+import { Container } from "@material-ui/core";
+import AlertDialog from "feature/Common/Dialog/AlertDialog";
 
 class ConfirmRestorePassword extends React.Component {
   state = { passwordNotMatched: false };
 
+  handleClose = () => {
+    this.props.history.push('/');
+  }
+
   componentDidMount() {
-    this.props.isAuth && this.props.history.push("/cabinet");
+    this.props.isAuth && this.props.history.push("/admin/home");
     const token = this.props.match.params.token;
     const id = this.props.match.params.id;
     this.props.verifyRestorePasswordToken({ token: token, id: id });
@@ -22,50 +30,44 @@ class ConfirmRestorePassword extends React.Component {
     const id = this.props.match.params.id;
     if (values.password !== values.confirmPassword) {
       this.setState({ passwordNotMatched: true });
-    }
-    else {
+    } else {
       this.setState({ passwordNotMatched: false });
-      token && this.props.confirmRestorePasswordRequest({ token: token, id: id, password: values.password });
+      token &&
+        this.props.confirmRestorePasswordRequest({
+          token: token,
+          id: id,
+          password: values.password,
+        });
     }
-  }
+  };
 
   render() {
     return (
-      <div className={style.confirmRestorePasswordWrapper}>
+      <Container>
         <Loader isLoading={this.props.verifyingToken}>
-        {this.props.verifiedToken && this.props.tokenValid ? (
-          <>
-          {!this.props.isSuccess ? (
-            <ConfirmRestorePasswordForm
-              handleSubmit={this.handleSubmit}
-              passwordNotMatched={this.state.passwordNotMatched}
-              isError={this.props.isError}
-              errorMessage={this.props.errorMessage}
-              />
-          ) : (
-              <div>
-                <h1>Success</h1>
-                <p>Password has changed.</p>
-                <p>
-                  Go to <Link to="/">Sign in</Link>
-                </p>
-              </div>
-          )}
-          </>
-            ) : (
-              <div>
-                <h1>Error</h1>
-                <p>{this.props.errorMessage}</p>
-                <p>
-                  Go to <Link to="/">Sign in</Link>
-                </p>
-              </div>
-            )}
+          <ConfirmRestorePasswordForm
+            handleSubmit={this.handleSubmit}
+            passwordNotMatched={this.state.passwordNotMatched}
+            isError={this.props.isError}
+            errorMessage={this.props.errorMessage}
+          />
+          <AlertDialog
+            title={"Success"}
+            content={"Password has changed."}
+            open={this.props.isSuccess}
+            handleClose={this.handleClose}
+          />
+          <AlertDialog
+            title={"Error"}
+            content={this.props.errorMessage}
+            open={!this.props.verifiedToken || !this.props.tokenValid}
+            handleClose={this.handleClose}
+          />
         </Loader>
-      </div>
+      </Container>
     );
   }
-};
+}
 
 ConfirmRestorePassword.propTypes = {
   isLoading: PropTypes.bool.isRequired,
@@ -77,10 +79,10 @@ ConfirmRestorePassword.propTypes = {
   verifyRestorePasswordToken: PropTypes.func.isRequired,
   tokenValid: PropTypes.func.isRequired,
   verifyingToken: PropTypes.func.isRequired,
-  verifiedToken: PropTypes.func.isRequired
+  verifiedToken: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isLoading: state.auth.confirmRestorePassword.isLoading,
   isAuth: state.auth.signin.isAuth,
   isError: state.auth.confirmRestorePassword.isError,
@@ -88,12 +90,12 @@ const mapStateToProps = state => ({
   errorMessage: state.auth.confirmRestorePassword.errorMessage,
   tokenValid: state.auth.confirmRestorePassword.tokenValid,
   verifyingToken: state.auth.confirmRestorePassword.verifyingToken,
-  verifiedToken: state.auth.confirmRestorePassword.verifiedToken
+  verifiedToken: state.auth.confirmRestorePassword.verifiedToken,
 });
 
 export const ConfirmRestorePasswordContainer = withRouter(
-  connect(
-    mapStateToProps,
-    { confirmRestorePasswordRequest, verifyRestorePasswordToken }
-  )(ConfirmRestorePassword)
+  connect(mapStateToProps, {
+    confirmRestorePasswordRequest,
+    verifyRestorePasswordToken,
+  })(ConfirmRestorePassword)
 );

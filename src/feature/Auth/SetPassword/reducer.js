@@ -5,6 +5,7 @@ import {
   SET_PASSWORD_PROCESS,
   SET_PASSWORD_ERROR,
   SET_PASSWORD_SUCCESS,
+  SET_PASSWORD_SUCCESS_CLOSE_DIALOG,
   RENEW_TOKEN_PROCESS,
   RENEW_TOKEN_SUCCESS,
   RENEW_TOKEN_ERROR
@@ -14,7 +15,8 @@ const setPasswordInitialState = {
   isSuccess: false,
   isLoading: false,
   isError: false,
-  errorMessage: ""
+  errorMessage: "",
+  openSuccessDialog: false
 };
 
 export const setPasswordReducer = (state = setPasswordInitialState, action) => {
@@ -32,7 +34,13 @@ export const setPasswordReducer = (state = setPasswordInitialState, action) => {
       return {
         ...state,
         isSuccess: true,
-        isLoading: false
+        isLoading: false,
+        openSuccessDialog: true,
+      };
+      case SET_PASSWORD_SUCCESS_CLOSE_DIALOG:
+      return {
+        ...state,
+        openSuccessDialog: false,
       };
     default:
       return state;

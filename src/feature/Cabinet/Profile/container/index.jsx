@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
@@ -11,40 +11,44 @@ import {
   Select,
   MenuItem,
   Grid,
-} from '@material-ui/core';
-import { Formik, Form } from 'formik';
-import PaymentForm from './Forms/UploadForm';
-import ReviewOrder from './Review';
-import CheckoutSuccess from './CheckoutSuccess';
-import MaterialLayout from '../Layout/MaterialLayout';
-import { firstStepForIndividual, firstStepForNonIndividual } from './FormModal/validationSchema';
-import getInitialData from './FormModal/formInitialValues';
-import AddressForm from './Forms/AddressForm';
-import useStyles from './styles';
-import { generateLocationAuthToken, getCountries } from "../../../API/locationActions";
+  Container,
+} from "@material-ui/core";
+import { Formik, Form } from "formik";
+import CheckoutSuccess from "./CheckoutSuccess";
+import {
+  firstStepForIndividual,
+  firstStepForNonIndividual,
+} from "./FormModal/validationSchema";
+import getInitialData from "./FormModal/formInitialValues";
+import StepContent from "./stepContent";
+import useStyles from "./styles";
+import {
+  generateLocationAuthToken,
+  getCountries,
+} from "../../../API/locationActions";
+import {
+  uploadFormUploadRequest,
+  uploadFormSuccessCloseModal,
+  uploadFormCloseErrorModal,
+  uploadFormAddFiles,
+  uploadFormAddError,
+} from "../actions";
 import { userType, userTypeOptions } from "../../../../config/constants";
+import ConfirmationDialog from "../../../Common/Dialog/ConfirmationDialog";
+import AlertDialog from "../../../Common/Dialog/AlertDialog";
+import LoadingAlertDialog from "feature/Common/Dialog/LoadingAlertDialog";
 
-const steps = ['Details', 'Uploads', 'Review'];
-
-function StepContent({ step, profile }) {
-  switch (step) {
-    case 0:
-      return <AddressForm profile={profile} />;
-    case 1:
-      return <PaymentForm />;
-    case 2:
-      return <ReviewOrder />;
-    default:
-      return <div>Not Found</div>;
-  }
-}
+const steps = ["Details", "Uploads", "Review"];
 
 const getValidationSchema = (step, profile) => {
   let schema = null;
 
-  switch(step) {
+  switch (step) {
     case 0:
-      schema = (profile.user_type === userType.individual) ? firstStepForIndividual : firstStepForNonIndividual;
+      schema =
+        profile.type === userType.individual
+          ? firstStepForIndividual
+          : firstStepForNonIndividual;
       break;
     case 1:
       break;
@@ -54,9 +58,12 @@ const getValidationSchema = (step, profile) => {
   return schema;
 };
 
-export const Profile = props => {
+export const Profile = (props) => {
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(0);
+  const [formData, setFormData] = useState({});
+  const [actions, setActions] = useState({});
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const isLastStep = activeStep === steps.length - 1;
   const {
     location,
@@ -65,16 +72,37 @@ export const Profile = props => {
     profile,
   } = props;
 
+  const handleConfirmConfirmationDialog = () => {
+    props.uploadFormUploadRequest(formData);
+    setConfirmDialogOpen(false);
+  };
+
+  const handleCloseConfirmationDialog = () => {
+    setConfirmDialogOpen(false);
+  };
+
+  const handleCloseSuccessAlert = () => {
+    props.uploadFormSuccessCloseModal();
+    setActiveStep(0);
+    actions.resetForm();
+    setActions({});
+    setFormData({});
+  };
+
+  const handleCloseErrorAlert = () => {
+    props.uploadFormCloseErrorModal();
+  };
+
   useEffect(() => {
     const getLocationAuthToken = async () => {
-      if(!location.authToken) {
+      if (!location.authToken) {
         return generateLocationAuthToken();
       }
     };
 
     const getCountries = async () => {
       const token = await getLocationAuthToken();
-      if(token) {
+      if (token) {
         getCountriesAction();
       }
     };
@@ -84,6 +112,22 @@ export const Profile = props => {
 
   async function handleSubmit(values, actions) {
     if (isLastStep) {
+      const data = new FormData();
+      data.append("type", profile.type);
+      Object.keys(props.files).forEach((key) => {
+        if (props.files[key].length > 0) {
+          props.files[key].forEach((file) => {
+            data.append(key.slice(0, key.length - 1), file.originFileObj);
+          });
+        }
+      });
+      Object.keys(values).forEach((key) => {
+        data.append(key, values[key]);
+      });
+
+      setConfirmDialogOpen(true);
+      setFormData(data);
+      setActions(actions);
     } else {
       setActiveStep(activeStep + 1);
       actions.setTouched({});
@@ -96,9 +140,10 @@ export const Profile = props => {
   }
 
   return (
+    <Container>
       <React.Fragment>
         <Stepper activeStep={activeStep} className={classes.stepper}>
-          {steps.map(label => (
+          {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
             </Step>
@@ -117,17 +162,31 @@ export const Profile = props => {
             >
               {({ isSubmitting }) => (
                 <Form>
-                  <Grid container spacing={3} direction='row-reverse'>
+                  <Grid container spacing={3} direction="row-reverse">
                     <Grid item xs={12} sm={3}>
-                      <Select data={userTypeOptions} value={profile.user_type} disabled className={classes.typeSelector} fullWidth>
-                        { userTypeOptions.map((item, index) => (
-                            <MenuItem value={item.value} key={index}>{item.label}</MenuItem>
-                        )) }
+                      <Select
+                        data={userTypeOptions}
+                        value={profile.type}
+                        disabled
+                        className={classes.typeSelector}
+                        fullWidth
+                      >
+                        {userTypeOptions.map((item, index) => (
+                          <MenuItem value={item.value} key={index}>
+                            {item.label}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </Grid>
                   </Grid>
 
-                  <StepContent step={activeStep} profile={profile} />
+                  <StepContent
+                    step={activeStep}
+                    profile={profile}
+                    files={props.files}
+                    uploadFormAddError={props.uploadFormAddError}
+                    uploadFormAddFiles={props.uploadFormAddFiles}
+                  />
 
                   <div className={classes.buttons}>
                     {activeStep !== 0 && (
@@ -143,14 +202,8 @@ export const Profile = props => {
                         color="primary"
                         className={classes.button}
                       >
-                        {isLastStep ? 'Place order' : 'Next'}
+                        {isLastStep ? "Place order" : "Next"}
                       </Button>
-                      {isSubmitting && (
-                        <CircularProgress
-                          size={24}
-                          className={classes.buttonProgress}
-                        />
-                      )}
                     </div>
                   </div>
                 </Form>
@@ -159,27 +212,68 @@ export const Profile = props => {
           )}
         </React.Fragment>
       </React.Fragment>
+      <ConfirmationDialog
+        title={"Confirmation"}
+        content={"Do you confirm that all of the data you entered is correct"}
+        open={confirmDialogOpen}
+        handleConfirm={handleConfirmConfirmationDialog}
+        handleClose={handleCloseConfirmationDialog}
+      />
+      <AlertDialog
+        title={"Thank you for your order."}
+        content={
+          "Your order number is #2001539. We have emailed your order confirmation, and will send you an update when your order has shipped."
+        }
+        open={props.successOpenModal}
+        handleClose={handleCloseSuccessAlert}
+      />
+      <AlertDialog
+        title={"Error"}
+        content={props.uploadFormErrorMessage}
+        open={props.errorOpenModal}
+        handleClose={handleCloseErrorAlert}
+      />
+      <LoadingAlertDialog
+      
+      title={"Loading ..."}
+      open={props.isUploadFormLoading}
+      />
+    </Container>
   );
 };
 
 Profile.propTypes = {
   isLoading: PropTypes.bool.isRequired,
+  isUploadFormLoading: PropTypes.bool.isRequired,
+  successOpenModal: PropTypes.bool.isRequired,
   users: PropTypes.array,
   profile: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isLoading: state.cabinet.users.isLoading,
   users: state.cabinet.users.data,
   profile: state.auth.signin.user,
   location: state.location,
+  uploadFormData: state.cabinet.profile.UploadFormData,
+  isUploadFormLoading: state.cabinet.profile.isUploadFormLoading,
+  isUploadFormError: state.cabinet.profile.isUploadFormError,
+  uploadFormErrorMessage: state.cabinet.profile.uploadFormErrorMessage,
+  successOpenModal: state.cabinet.profile.successOpenModal,
+  errorOpenModal: state.cabinet.profile.errorOpenModal,
+  files: state.cabinet.files,
 });
 
 const mapDispatchToProps = {
   generateLocationAuthToken,
+  uploadFormUploadRequest,
+  uploadFormSuccessCloseModal,
+  uploadFormCloseErrorModal,
+  uploadFormAddFiles,
+  uploadFormAddError,
   getCountriesAction: getCountries,
 };
 
 export const ProfileContainer = withRouter(
-    connect(mapStateToProps, mapDispatchToProps)(Profile)
+  connect(mapStateToProps, mapDispatchToProps)(Profile)
 );

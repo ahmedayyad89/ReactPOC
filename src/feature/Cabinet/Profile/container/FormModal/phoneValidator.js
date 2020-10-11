@@ -21,10 +21,10 @@ export const validatePhone = async (value) => {
   try {
     const res = await axios.get(url, options);
     if(!res.data.valid) {
-      error = phone.invalidErrorMsg;
+      // error = phone.invalidErrorMsg;
     }
   } catch(e) {
-    error = phone.invalidErrorMsg;
+    // error = phone.invalidErrorMsg;
   }
 
   return error;

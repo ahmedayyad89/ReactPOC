@@ -3,8 +3,10 @@ import { api } from "../../../helpers/api";
 export const RESTORE_REQUEST_PROCESS = "RESTORE_REQUEST_PROCESS";
 export const RESTORE_REQUEST_ERROR = "RESTORE_REQUEST_ERROR";
 export const RESTORE_SUCCESS = "RESTORE_SUCCESS";
+export const RESTORE_SUCCESS_CLOSE_DIALOG = "RESTORE_SUCCESS_CLOSE_DIALOG";
 
 export const restoreRequestProcess = () => ({ type: RESTORE_REQUEST_PROCESS });
+export const restoreCloseAlertDialog = () => ({ type: RESTORE_SUCCESS_CLOSE_DIALOG });
 
 export const restoreSuccess = data => ({
   type: RESTORE_SUCCESS,

@@ -3,8 +3,10 @@ import { api } from "../../../helpers/api";
 export const SIGNUP_REQUEST_PROCESS = "SIGNUP_REQUEST_PROCESS";
 export const SIGNUP_REQUEST_ERROR = "SIGNUP_REQUEST_ERROR";
 export const SIGNUP_SUCCESS = "SIGNUP_REQUEST_SUCCESS";
+export const SIGNUP_SUCCESS_CLOSE_DIALOG = "SIGNUP_SUCCESS_CLOSE_DIALOG";
 
 export const signupRequestProcess = () => ({ type: SIGNUP_REQUEST_PROCESS });
+export const signupCloseDialog = () => ({ type: SIGNUP_SUCCESS_CLOSE_DIALOG });
 
 export const signupSuccess = data => ({
   type: SIGNUP_SUCCESS,

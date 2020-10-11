@@ -1,6 +1,5 @@
 import { api } from "../../../helpers/api";
 import { setAuthUserData, removeAuthUserData } from "../../../helpers/auth";
-import { removeLocationData } from "../../../helpers/location";
 
 export const SIGNIN_REQUEST_PROCESS = "SIGNIN_REQUEST_PROCESS";
 export const SIGNIN_REQUEST_ERROR = "SIGNIN_REQUEST_ERROR";
@@ -37,6 +36,5 @@ export const signinRequest = formData => async dispatch => {
 
 export const logoutHandler = () => dispatch => {
   removeAuthUserData();
-  removeLocationData();
   dispatch(logout());
 };

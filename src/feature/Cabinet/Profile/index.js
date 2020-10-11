@@ -1,3 +1,3 @@
-export { profileReducer } from "./reducer";
+export { profileReducer, fileReducer } from "./reducer";
 
 export { ProfileContainer } from "./container";

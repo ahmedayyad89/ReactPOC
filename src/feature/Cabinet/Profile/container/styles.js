@@ -18,7 +18,7 @@ export default makeStyles(theme => ({
   buttonProgress: {
     position: 'absolute',
     top: '50%',
-    left: '50%'
+    left: ''
   },
   typeSelector: {
     marginBottom: 15,

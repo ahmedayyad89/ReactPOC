@@ -1,14 +1,16 @@
 import {
   RESTORE_REQUEST_PROCESS,
   RESTORE_REQUEST_ERROR,
-  RESTORE_SUCCESS
+  RESTORE_SUCCESS,
+  RESTORE_SUCCESS_CLOSE_DIALOG
 } from "./actions";
 
 const initialState = {
   isSuccess: false,
   isLoading: false,
   isError: false,
-  errorMessage: ""
+  errorMessage: "",
+  openSuccessDialog: false
 };
 
 export const restorePasswordReducer = (state = initialState, action) => {
@@ -26,7 +28,14 @@ export const restorePasswordReducer = (state = initialState, action) => {
       return {
         ...state,
         isSuccess: true,
-        isLoading: false
+        isLoading: false,
+        openSuccessDialog: true
+      };
+
+    case RESTORE_SUCCESS_CLOSE_DIALOG:
+      return {
+        ...state,
+        openSuccessDialog: false
       };
     default:
       return state;

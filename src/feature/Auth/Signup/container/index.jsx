@@ -1,74 +1,66 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { SignupForm } from "../components/SignupForm";
 import { connect } from "react-redux";
-import { signupRequest } from "../actions";
+import { signupRequest, signupCloseDialog } from "../actions";
 import { withRouter } from "react-router-dom";
-import style from "./index.module.scss";
-import { Row, Col, Typography, Button } from "antd";
-import animate from "../../../../assets/account-animate.svg";
-import { ReactComponent as ReactLogo } from "../../../../assets/tick.svg";
-const Signup = props => {
+import { Container, Button } from "@material-ui/core";
+import ConfirmationDialog from "feature/Common/Dialog/ConfirmationDialog";
+import AlertDialog from "feature/Common/Dialog/AlertDialog";
+const Signup = (props) => {
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({});
+
   useEffect(() => {
     props.isAuth && props.history.push("/cabinet");
   });
 
+  const handleSubmit = (values) => {
+    setConfirmDialogOpen(true);
+    setFormData(values);
+  };
+
+  const handleConfirmConfirmationDialog = () => {
+    props.signupRequest(formData);
+    setConfirmDialogOpen(false);
+  };
+
+  const handleCloseConfirmationDialog = () => {
+    setConfirmDialogOpen(false);
+  };
+
+  const handleCloseAlertDialog = () => {
+    props.signupCloseDialog();
+    props.history.push('/');
+  };
+
+
+
   return (
-    <div className={style.signupFormWrapper}>
-      {props.isSuccess ? (
-        <div>
-          <Row>
-            <Col span={24}>
-              <object
-                type="image/svg+xml"
-                data={animate}
-                className={style.animate}
-                viewbox="0 0 1200 1200"
-              >
-                svg-animation
-              </object>
-            </Col>
-          </Row>
-          <Row style={{ marginLeft: "300px" }}>
-            <Col span={2}>
-              <ReactLogo style={{ width: "20px", height: "20px" }} />
-            </Col>
-            <Col span={22}>
-              <Typography>Email sent successfully.</Typography>
-            </Col>
-          </Row>
-          <Row style={{ marginTop: "20px", marginLeft: "200px" }}>
-            <Col span={20}>
-              <Typography>
-                Please follow the steps as described in email for further
-                registration.
-              </Typography>
-            </Col>
-          </Row>
-          <Button
-            type="primary"
-            htmlType="submit"
-            onClick={() => {
-              props.history.push("/");
-            }}
-            style={{
-              width: "20%",
-              marginLeft: "315px",
-              marginTop: "20px"
-            }}
-          >
-            Login
-          </Button>
-        </div>
-      ) : (
-        <SignupForm
-          onSubmit={props.signupRequest}
-          isLoading={props.isLoading}
-          isError={props.isError}
-          errorMessage={props.errorMessage}
-        />
-      )}
-    </div>
+    <Container>
+      <SignupForm
+        onSubmit={handleSubmit}
+        isLoading={props.isLoading}
+        isError={props.isError}
+        errorMessage={props.errorMessage}
+        isModalOpen={props.openSuccessDialog}
+      />
+      <ConfirmationDialog
+        title={"Confirmation"}
+        content={"Do you confirm that all of the data you entered is correct"}
+        open={confirmDialogOpen}
+        handleConfirm={handleConfirmConfirmationDialog}
+        handleClose={handleCloseConfirmationDialog}
+      />
+      <AlertDialog
+        title={"Email sent successfully."}
+        content={
+          "Please follow the steps as described in email for further registration."
+        }
+        open={props.openSuccessDialog}
+        handleClose={handleCloseAlertDialog}
+      />
+    </Container>
   );
 };
 
@@ -78,17 +70,19 @@ Signup.propTypes = {
   isSuccess: PropTypes.bool.isRequired,
   isError: PropTypes.bool.isRequired,
   errorMessage: PropTypes.string.isRequired,
-  signupRequest: PropTypes.func.isRequired
+  signupRequest: PropTypes.func.isRequired,
+  openSuccessDialog: PropTypes.bool.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isLoading: state.auth.signup.isLoading,
   isAuth: state.auth.signin.isAuth,
   isError: state.auth.signup.isError,
   isSuccess: state.auth.signup.isSuccess,
-  errorMessage: state.auth.signup.errorMessage
+  errorMessage: state.auth.signup.errorMessage,
+  openSuccessDialog: state.auth.signup.openSuccessDialog,
 });
 
 export const SignupContainer = withRouter(
-  connect(mapStateToProps, { signupRequest })(Signup)
+  connect(mapStateToProps, { signupRequest, signupCloseDialog })(Signup)
 );

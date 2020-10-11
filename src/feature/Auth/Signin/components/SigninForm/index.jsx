@@ -1,126 +1,163 @@
-import React from "react";
-import { Form, Input, Button } from "antd";
-import style from "./index.module.scss";
+import React, { useState } from "react";
+import { Form, Avatar, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { Row, Col, Typography } from "antd";
-import ReCAPTCHA from "react-google-recaptcha";
-import animate from "../../../../../assets/mobile-login-animate.svg";
-import app from "../../../../../config/app";
+import {
+  Button,
+  CircularProgress,
+  Container,
+  CssBaseline,
+  makeStyles,
+  TextField,
+} from "@material-ui/core";
+import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import GridContainer from "../../../../../components/Grid/GridContainer";
+import GridItem from "../../../../../components/Grid/GridItem";
+import {
+  GoogleReCaptchaProvider,
+  GoogleReCaptcha,
+} from "react-google-recaptcha-v3";
+import config from "../../../../../config/app";
+import { whiteColor } from "assets/jss/material-dashboard-react";
 
-const SigninFormComponent = props => {
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: "100%", // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+  buttonProgress: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    color: whiteColor
+  },
+}));
+
+const SigninFormComponent = (props) => {
+  const classes = useStyles();
   const { getFieldDecorator } = props.form;
+  const [recaptchaToken, setRecaptchaToken] = useState();
 
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
+        values["token"] = recaptchaToken;
         props.onSubmit(values);
       }
     });
   };
 
-  const { Title } = Typography;
-
   return (
-    <Row type='flex' className={style.row}>
-      <Col span={12}>
-        <div className={style.formColumn}>
-          <Title
-              level={1}
-              style={{
-                fontWeight: "bold",
-                textShadow: "0x 1px rgba(0,0,0,0.2)",
-                textAlign: "center",
-                marginBottom: 1
-              }}
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <div className={classes.paper}>
+        <Avatar className={classes.avatar}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Welcome Back!
+        </Typography>
+        <Form
+          name="normal_login"
+          onSubmit={handleSubmit}
+        >
+          <Form.Item
+            name="email"
+            rules={[{ required: true, message: "Please enter your Email" }]}
           >
-            Welcome Back!
-          </Title>
-          <Form
-              name="normal_login"
-              onSubmit={handleSubmit}
-              className={style.signinForm}
-              initialValues={{ remember: true }}
-          >
-            <Form.Item
+            {getFieldDecorator("email", {
+              rules: [
+                { required: true, message: "Please input your email!" },
+                { type: "email", message: "The input is not valid E-mail!" },
+              ],
+            })(
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                id="email"
+                label="Email Address"
                 name="email"
-                rules={[{ required: true, message: "Please enter your Email" }]}
-                style={{
-                  width: "70%",
-                  marginLeft: 60,
-                  marginTop: 30
-                }}
-            >
-              {getFieldDecorator("email", {
-                rules: [
-                  { required: true, message: "Please input your email!" },
-                  { type: "email", message: "The input is not valid E-mail!" }
-                ]
-              })(<Input placeholder="Email" />)}
-            </Form.Item>
-            <Form.Item
+                autoComplete="email"
+                autoFocus
+              />
+            )}
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please enter your Password!" }]}
+            {...(props.isError && {
+              help: props.errorMessage,
+              validateStatus: "error",
+            })}
+          >
+            {getFieldDecorator("password", {
+              rules: [
+                { required: true, message: "Please input your password!" },
+              ],
+            })(
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
                 name="password"
-                rules={[{ required: true, message: "Please enter your Password!" }]}
-                style={{
-                  width: "70%",
-                  marginLeft: 60
-                }}
-                {...(props.isError && {
-                  help: props.errorMessage,
-                  validateStatus: "error"
-                })}
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+              />
+            )}
+          </Form.Item>
+          <Form.Item name="recaptcha">
+            <GoogleReCaptchaProvider reCaptchaKey={config.RECAPTCHA_SECRET_KEY}>
+              <GoogleReCaptcha onVerify={(token) => setRecaptchaToken(token)} />
+            </GoogleReCaptchaProvider>
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
             >
-              {getFieldDecorator("password", {
-                rules: [
-                  { required: true, message: "Please input your password!" }
-                ]
-              })(<Input type="password" placeholder="Password" />)}
-            </Form.Item>
-            <div className={style.captchaWrap}>
-              {/* <Form.Item>
-                {getFieldDecorator("recaptcha", {
-                  rules: [
-                    { required: true, message: "Please fill the reCaptcha!" }
-                  ]
-                })(
-                  <ReCAPTCHA sitekey={app.captchaSiteKey} />
-                )}
-              </Form.Item> */}
-            </div>
-            <div className={style.forgotPassword}>
-              <a href="/restore-password">Forgot password</a>
-            </div>
-            <Form.Item>
-              <Button
-                  type="primary"
-                  loading={props.isLoading}
-                  style={{ width: "100%" }}
-                  htmlType="submit"
-                  style={{
-                    width: "70%",
-                    marginLeft: 60
-                  }}
-              >
-                Login
-              </Button>
-              <div className={style.singupLinks}>
-                Don't have an account yet?
-                <Link to="/signup"> Sign up</Link>
-              </div>
-            </Form.Item>
-          </Form>
-        </div>
-      </Col>
-      <Col span={12}>
-        <div className={style.card}>
-          <object type="image/svg+xml" data={animate} className={style.animate}>
-            svg-animation
-          </object>
-          <h5 className={style.loginFooter}>Copyright © 2020. All rights reserved.</h5>
-        </div>
-      </Col>
-    </Row>
+              Sign In
+            </Button>
+            {props.isLoading && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
+          </Form.Item>
+          
+
+          <GridContainer>
+            <GridItem xs>
+              <Link to="/restore-password" variant="body2">
+                Forgot password?
+              </Link>
+            </GridItem>
+            <GridItem>
+              <Link to="/signup" variant="body2">
+                {"Don't have an account? Sign Up"}
+              </Link>
+            </GridItem>
+          </GridContainer>
+        </Form>
+      </div>
+    </Container>
   );
 };
 

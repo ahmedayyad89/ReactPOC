@@ -17,7 +17,7 @@ import {
 } from "./locationActions";
 
 const initialState = {
-  countries: [],
+  countries: [{label: 'Egypt', value: 'Egypt'}],
   states: [],
   cities: [],
   authToken: null,
